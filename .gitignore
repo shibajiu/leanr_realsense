@@ -1,0 +1,6 @@
+.vs/
+WindowsFormsApplication1/bin
+WindowsFormsApplication1/obj
+WindowsFormsApplication1/properties
+*.config
+*.dll

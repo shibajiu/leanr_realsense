@@ -35,7 +35,12 @@
             this.textBoxInfo = new System.Windows.Forms.TextBox();
             this.textBoxInfo2 = new System.Windows.Forms.TextBox();
             this.renderWindow = new System.Windows.Forms.PictureBox();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.DeviceMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ColorMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.DepthMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.renderWindow)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -100,6 +105,37 @@
             this.renderWindow.Paint += new System.Windows.Forms.PaintEventHandler(this.renderWindow_Paint);
             this.renderWindow.Resize += new System.EventHandler(this.renderWindow_Resize);
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.DeviceMenu,
+            this.ColorMenu,
+            this.DepthMenu});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(1609, 32);
+            this.menuStrip1.TabIndex = 7;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // DeviceMenu
+            // 
+            this.DeviceMenu.Name = "DeviceMenu";
+            this.DeviceMenu.Size = new System.Drawing.Size(79, 28);
+            this.DeviceMenu.Text = "Device";
+            // 
+            // ColorMenu
+            // 
+            this.ColorMenu.Name = "ColorMenu";
+            this.ColorMenu.Size = new System.Drawing.Size(68, 28);
+            this.ColorMenu.Text = "Color";
+            // 
+            // DepthMenu
+            // 
+            this.DepthMenu.Name = "DepthMenu";
+            this.DepthMenu.Size = new System.Drawing.Size(76, 28);
+            this.DepthMenu.Text = "Depth";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -112,9 +148,13 @@
             this.Controls.Add(this.labelDepth);
             this.Controls.Add(this.labelColor);
             this.Controls.Add(this.button1);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.renderWindow)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -129,6 +169,10 @@
         private System.Windows.Forms.TextBox textBoxInfo;
         private System.Windows.Forms.TextBox textBoxInfo2;
         private System.Windows.Forms.PictureBox renderWindow;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem DeviceMenu;
+        private System.Windows.Forms.ToolStripMenuItem ColorMenu;
+        private System.Windows.Forms.ToolStripMenuItem DepthMenu;
     }
 }
 

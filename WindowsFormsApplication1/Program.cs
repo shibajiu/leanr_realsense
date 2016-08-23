@@ -16,7 +16,11 @@ namespace WindowsFormsApplication1
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            PXCMSession session = PXCMSession.CreateInstance();
+            if (session != null)
+            {
+                Application.Run(new Form1(session));
+            }
         }
     }
 }

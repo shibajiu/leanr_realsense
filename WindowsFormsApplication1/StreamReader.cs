@@ -29,6 +29,7 @@ namespace WindowsFormsApplication1
         }
     }
 
+    
     class StreamReader
     {
         public event EventHandler<EventArgsUpdateStatus> UpdateStatus;
@@ -46,6 +47,17 @@ namespace WindowsFormsApplication1
 
         private bool isGetImage = false;
         private PXCMImage _Image;
+        private string ScanType="Object";
+
+        public enum Config3D
+        {
+            SCAN_OBJECT=0,
+            SCAN_HEAD,
+            SCAN_FACE,
+            SCAN_BODY,
+            SCAN_VARIABLE,
+
+        }
 
         public void SreamEnable()
         {
@@ -55,6 +67,11 @@ namespace WindowsFormsApplication1
             Mirror = Synced = true;
             Playback = Record = Stop = false;
             MainPanel = PIPPanel = PXCMCapture.StreamType.STREAM_TYPE_ANY;
+        }
+
+        public void chageScanType(string s)
+        {
+            ScanType = s;
         }
 
         private void SetStatus(string text)
@@ -87,6 +104,7 @@ namespace WindowsFormsApplication1
                     pmsm.captureManager.SetFileName(File, Record);
                 if (!Playback && DeviceInfo != null)
                     pmsm.captureManager.FilterByDeviceInfo(DeviceInfo);
+                //use profileset to enable streams
                 if (ProfileSet != null)
                 {
                     pmsm.captureManager.FilterByStreamProfiles(ProfileSet);
@@ -102,6 +120,35 @@ namespace WindowsFormsApplication1
                             datadesc.streams[st].sizeMin.width = datadesc.streams[st].sizeMax.width = info.imageInfo.width;
                             datadesc.streams[st].options = info.options;
                             pmsm.EnableStreams(datadesc);
+                        }
+                    }
+
+                    var result = pmsm.Enable3DScan();
+                    if (result < pxcmStatus.PXCM_STATUS_NO_ERROR)
+                    {
+                        SetStatus("Enable3D Failed" + result);
+                    }
+
+                    PXCM3DScan.Configuration config=new PXCM3DScan.Configuration();
+                    if (ScanType == "Object") config.mode = PXCM3DScan.ScanningMode.OBJECT_ON_PLANAR_SURFACE_DETECTION;
+                    if (ScanType == "Face") config.mode = PXCM3DScan.ScanningMode.FACE;
+                    if (ScanType == "Head") config.mode = PXCM3DScan.ScanningMode.HEAD;
+                    if (ScanType == "Body") config.mode = PXCM3DScan.ScanningMode.BODY;
+                    if (ScanType == "Variable") config.mode = PXCM3DScan.ScanningMode.VARIABLE;
+
+                    config.options = PXCM3DScan.ReconstructionOption.NONE;
+                    //...scan option codes
+                    var scan = pmsm.Query3DScan();
+                    if (scan == null) SetStatus("Query3DScan Failed");
+                    else
+                    {
+                        if (scan.SetConfiguration(config) < pxcmStatus.PXCM_STATUS_NO_ERROR)
+                        {
+                            scan.Dispose();
+                        }
+                        else
+                        {
+
                         }
                     }
                     SetStatus("Init Start");
@@ -154,6 +201,20 @@ namespace WindowsFormsApplication1
             {
                 SetStatus(e.GetType().ToString());
             }
+        }
+         private void onAlert(PXCM3DScan.AlertData data)
+        {
+            try
+            {
+                switch (data.label)
+                {
+                    case PXCM3DScan.AlertEvent.ALERT_TOO_CLOSE:
+                        {
+                            break;
+                        }
+
+                }
+            }catch { }
         }
     }
 }

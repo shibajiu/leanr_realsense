@@ -171,6 +171,7 @@ namespace WindowsFormsApplication1
                 {
                     PXCMCapture.DeviceInfo dinfo;
                     if (capture.QueryDeviceInfo(j, out dinfo) < pxcmStatus.PXCM_STATUS_NO_ERROR) break;
+                    //check if realsense camera
                     if (dinfo.model == PXCMCapture.DeviceModel.DEVICE_MODEL_GENERIC) continue;
 
                     ToolStripMenuItem sm1 = new ToolStripMenuItem(i + ":" + j + ":" + dinfo.name, null, new EventHandler(Device_Item_Click));

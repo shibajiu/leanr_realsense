@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonStart = new System.Windows.Forms.Button();
             this.labelColor = new System.Windows.Forms.Label();
             this.labelDepth = new System.Windows.Forms.Label();
             this.textBoxConsole = new System.Windows.Forms.TextBox();
@@ -39,19 +39,22 @@
             this.DeviceMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ColorMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.DepthMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statuslabelStatus = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.renderWindow)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // buttonStart
             // 
-            this.button1.Location = new System.Drawing.Point(104, 70);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(147, 66);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.buttonStart.Location = new System.Drawing.Point(1165, 647);
+            this.buttonStart.Name = "buttonStart";
+            this.buttonStart.Size = new System.Drawing.Size(147, 66);
+            this.buttonStart.TabIndex = 0;
+            this.buttonStart.Text = "Start";
+            this.buttonStart.UseVisualStyleBackColor = true;
+            this.buttonStart.Click += new System.EventHandler(this.button1_Click);
             // 
             // labelColor
             // 
@@ -136,18 +139,36 @@
             this.DepthMenu.Size = new System.Drawing.Size(76, 28);
             this.DepthMenu.Text = "Depth";
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statuslabelStatus});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 755);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1609, 29);
+            this.statusStrip1.TabIndex = 8;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // statuslabelStatus
+            // 
+            this.statuslabelStatus.Name = "statuslabelStatus";
+            this.statuslabelStatus.Size = new System.Drawing.Size(36, 24);
+            this.statuslabelStatus.Text = "OK";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1609, 784);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.renderWindow);
             this.Controls.Add(this.textBoxInfo2);
             this.Controls.Add(this.textBoxInfo);
             this.Controls.Add(this.textBoxConsole);
             this.Controls.Add(this.labelDepth);
             this.Controls.Add(this.labelColor);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
@@ -155,6 +176,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.renderWindow)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -162,7 +185,7 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Label labelColor;
         private System.Windows.Forms.Label labelDepth;
         private System.Windows.Forms.TextBox textBoxConsole;
@@ -173,6 +196,8 @@
         private System.Windows.Forms.ToolStripMenuItem DeviceMenu;
         private System.Windows.Forms.ToolStripMenuItem ColorMenu;
         private System.Windows.Forms.ToolStripMenuItem DepthMenu;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statuslabelStatus;
     }
 }
 

@@ -19,21 +19,43 @@ namespace WindowsFormsApplication1
         private Dictionary<ToolStripMenuItem, PXCMCapture.DeviceInfo> devices = new Dictionary<ToolStripMenuItem, PXCMCapture.DeviceInfo>();
         private Dictionary<ToolStripMenuItem, int> devices_iuid = new Dictionary<ToolStripMenuItem, int>();
         private Dictionary<ToolStripMenuItem, PXCMCapture.Device.StreamProfile> profiles = new Dictionary<ToolStripMenuItem, PXCMCapture.Device.StreamProfile>();
-
+        private StreamReader streamreader = new StreamReader();
+        private delegate void SetStatusLabel(string status);
+        private SetStatusLabel statusdelegate;
 
         public Form1(PXCMSession s)
         {
             InitializeComponent();
-            this.session = s;
+            session = s;
             PopulateDeviceMenu();
-            render.SetHWND(renderWindow);
+            statusdelegate += new SetStatusLabel(setstatus);
 
-            this.FormClosing += new FormClosingEventHandler(RSSDKClose);
+            FormClosing += new FormClosingEventHandler(RSSDKClose);
+            streamreader.UpdateStatus += new EventHandler<EventArgsUpdateStatus>(UpdateStatusHandler);
+            streamreader.RenderFrame += new EventHandler<EventArgsRenderFrame>(RenderFrameHandler);
+            renderWindow.Paint += new PaintEventHandler(renderWindow_PaintHandler);
+            render.SetHWND(renderWindow);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            buttonStart.Enabled = false;
+            streamreader.ProfileSet = GetStreamProfileSet();
+            streamreader.DeviceInfo = GetCheckedDeviceInfo();
+            streamreader.Stop = false;
 
+        }
+
+        private delegate void DoStreamingEnd();
+        private void DoStreaming()
+        {
+            streamreader.StreamColorDepth();
+            Invoke(new DoStreamingEnd(
+                delegate
+                {
+                    buttonStart.Enabled = true;
+                }
+                ));
         }
 
         private void renderWindow_Resize(object sender, EventArgs e)
@@ -42,6 +64,34 @@ namespace WindowsFormsApplication1
             {
                 render.UpdatePanel();
             }
+        }
+
+         private PXCMCapture.Device.StreamProfileSet GetStreamProfileSet()
+        {
+            PXCMCapture.Device.StreamProfileSet profiles = new PXCMCapture.Device.StreamProfileSet();
+            foreach (ToolStripMenuItem t in ColorMenu.DropDownItems)
+            {
+                if(t.Checked)
+                {
+                    if (this.profiles.ContainsKey(t))
+                    {
+                        profiles[PXCMCapture.StreamType.STREAM_TYPE_COLOR] = this.profiles[t];
+                        break;
+                    }
+                }
+            }
+            foreach (ToolStripMenuItem t in DepthMenu.DropDownItems)
+            {
+                if (t.Checked)
+                {
+                    if (this.profiles.ContainsKey(t))
+                    {
+                        profiles[PXCMCapture.StreamType.STREAM_TYPE_DEPTH] = this.profiles[t];
+                        break;
+                    }
+                }
+            }
+            return profiles;
         }
 
         private void renderWindow_Paint(object sender, PaintEventArgs e)
@@ -63,6 +113,27 @@ namespace WindowsFormsApplication1
 
             PXCMSession.ImplDesc desc = new PXCMSession.ImplDesc();
             PXCMCapture.DeviceInfo dev_info = devices[(sender as ToolStripMenuItem)];
+        }
+
+        private void setstatus(string status)
+        {
+            statuslabelStatus.Text = status;
+        }
+
+        private void UpdateStatusHandler(object s,EventArgsUpdateStatus e)
+        {
+            statusdelegate.Invoke(e.text);
+        }
+
+        private void RenderFrameHandler(object s,EventArgsRenderFrame e)
+        {
+            if (e.image == null) return;
+            render.UpdatePanel(e.image);
+        }
+
+        private void renderWindow_PaintHandler(object s,EventArgs e)
+        {
+            render.UpdatePanel();
         }
 
         private void PopulateDeviceMenu()

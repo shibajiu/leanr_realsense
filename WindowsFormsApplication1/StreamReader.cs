@@ -44,6 +44,9 @@ namespace WindowsFormsApplication1
         public PXCMCapture.StreamType MainPanel;
         public PXCMCapture.StreamType PIPPanel;
 
+        private bool isGetImage = false;
+        private PXCMImage _Image;
+
         public void SreamEnable()
         {
             DeviceInfo = null;
@@ -59,11 +62,21 @@ namespace WindowsFormsApplication1
             UpdateStatus?.Invoke(this, new EventArgsUpdateStatus(text));
         }
 
+        public PXCMImage getSingleImage()
+        {
+            isGetImage = true;
+            while (isGetImage)
+            {
+
+            }
+            return _Image;
+        }
+
         public void StreamColorDepth()
         {
             try
             {
-                bool sts = false;
+                bool sts = true;
                 PXCMSenseManager pmsm = PXCMSenseManager.CreateInstance();
                 if (pmsm == null)
                 {
@@ -106,18 +119,25 @@ namespace WindowsFormsApplication1
 
                             PXCMCapture.Sample sample = pmsm.QuerySample();
                             PXCMImage image = null;
-                            if (MainPanel != PXCMCapture.StreamType.STREAM_TYPE_ANY && RenderFrame != null)
+                            var passimage = RenderFrame;
+                            if (MainPanel != PXCMCapture.StreamType.STREAM_TYPE_ANY && passimage!= null)
                             {
                                 image = sample[MainPanel];
-                                RenderFrame(this, new EventArgsRenderFrame(0, image));
+                                if (isGetImage)
+                                {
+                                    _Image = image;
+                                    isGetImage = false;
+                                }
+                                passimage(this, new EventArgsRenderFrame(0, image));
                             }
-                            if(PIPPanel != PXCMCapture.StreamType.STREAM_TYPE_ANY && RenderFrame != null)
-                            {
-                                RenderFrame(this, new EventArgsRenderFrame(1, sample[PIPPanel]));
-                            }
+                            //if(PIPPanel != PXCMCapture.StreamType.STREAM_TYPE_ANY && passimage != null)
+                            //{
+                            //    passimage(this, new EventArgsRenderFrame(1, sample[PIPPanel]));
+                            //}
                             mirror = Mirror ? PXCMCapture.Device.MirrorMode.MIRROR_MODE_HORIZONTAL : PXCMCapture.Device.MirrorMode.MIRROR_MODE_DISABLED;
                             if (mirror != pmsm.captureManager.device.QueryMirrorMode())
                                 pmsm.captureManager.device.SetMirrorMode(mirror);
+                            pmsm.ReleaseFrame();
                         }
                     }
                     else

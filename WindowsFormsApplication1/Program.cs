@@ -20,6 +20,7 @@ namespace WindowsFormsApplication1
             if (session != null)
             {
                 Application.Run(new Form1(session));
+                session.Dispose();
             }
         }
     }

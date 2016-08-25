@@ -15,6 +15,7 @@ namespace WindowsFormsApplication1
     {
         private PXCMSession session;
         private D2D1Render render = new D2D1Render();
+        private D2D1Render renderSnap = new D2D1Render();
         private static readonly object _renderlock = new object();
         private Dictionary<ToolStripMenuItem, PXCMCapture.DeviceInfo> devices = new Dictionary<ToolStripMenuItem, PXCMCapture.DeviceInfo>();
         private Dictionary<ToolStripMenuItem, int> devices_iuid = new Dictionary<ToolStripMenuItem, int>();
@@ -33,8 +34,12 @@ namespace WindowsFormsApplication1
             FormClosing += new FormClosingEventHandler(RSSDKClose);
             streamreader.UpdateStatus += new EventHandler<EventArgsUpdateStatus>(UpdateStatusHandler);
             streamreader.RenderFrame += new EventHandler<EventArgsRenderFrame>(RenderFrameHandler);
-            renderWindow.Paint += new PaintEventHandler(renderWindow_PaintHandler);
-            render.SetHWND(renderWindow);
+            renderWindow1.Paint += new PaintEventHandler(renderWindow_PaintHandler);
+            renderWindow1.Resize += new EventHandler(renderWindow_ResizeHandler);
+
+            render.SetHWND(renderWindow1);
+            renderSnap.SetHWND(pictureBoxSnap);
+            streamreader.MainPanel = PXCMCapture.StreamType.STREAM_TYPE_COLOR;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -43,7 +48,9 @@ namespace WindowsFormsApplication1
             streamreader.ProfileSet = GetStreamProfileSet();
             streamreader.DeviceInfo = GetCheckedDeviceInfo();
             streamreader.Stop = false;
-
+            System.Threading.Thread renderthread = new System.Threading.Thread(DoStreaming);
+            renderthread.Start();
+            System.Threading.Thread.Sleep(5);
         }
 
         private delegate void DoStreamingEnd();
@@ -60,18 +67,18 @@ namespace WindowsFormsApplication1
 
         private void renderWindow_Resize(object sender, EventArgs e)
         {
-            lock (_renderlock)
+            //lock (_renderlock)
             {
                 render.UpdatePanel();
             }
         }
 
-         private PXCMCapture.Device.StreamProfileSet GetStreamProfileSet()
+        private PXCMCapture.Device.StreamProfileSet GetStreamProfileSet()
         {
             PXCMCapture.Device.StreamProfileSet profiles = new PXCMCapture.Device.StreamProfileSet();
             foreach (ToolStripMenuItem t in ColorMenu.DropDownItems)
             {
-                if(t.Checked)
+                if (t.Checked)
                 {
                     if (this.profiles.ContainsKey(t))
                     {
@@ -96,7 +103,7 @@ namespace WindowsFormsApplication1
 
         private void renderWindow_Paint(object sender, PaintEventArgs e)
         {
-            lock (_renderlock)
+            //lock (_renderlock)
             {
                 render.UpdatePanel();
             }
@@ -120,20 +127,25 @@ namespace WindowsFormsApplication1
             statuslabelStatus.Text = status;
         }
 
-        private void UpdateStatusHandler(object s,EventArgsUpdateStatus e)
+        private void UpdateStatusHandler(object s, EventArgsUpdateStatus e)
         {
             statusdelegate.Invoke(e.text);
         }
 
-        private void RenderFrameHandler(object s,EventArgsRenderFrame e)
+        private void RenderFrameHandler(object s, EventArgsRenderFrame e)
         {
             if (e.image == null) return;
             render.UpdatePanel(e.image);
         }
 
-        private void renderWindow_PaintHandler(object s,EventArgs e)
+        private void renderWindow_PaintHandler(object s, EventArgs e)
         {
             render.UpdatePanel();
+        }
+
+        private void renderWindow_ResizeHandler(object s, EventArgs e)
+        {
+            render.ResizePanel();
         }
 
         private void PopulateDeviceMenu()
@@ -151,7 +163,7 @@ namespace WindowsFormsApplication1
             {
                 PXCMSession.ImplDesc desc_sub;
                 if (session.QueryImpl(desc, i, out desc_sub) < pxcmStatus.PXCM_STATUS_NO_ERROR) break;
-                textBoxConsole.AppendText("Model["+i+"]:"+desc_sub.friendlyName+"\n");
+                textBoxConsole.AppendText("Model[" + i + "]:" + desc_sub.friendlyName + "\n");
                 PXCMCapture capture;
                 if (session.CreateImpl<PXCMCapture>(desc_sub, out capture) < pxcmStatus.PXCM_STATUS_NO_ERROR)
                     continue;
@@ -161,7 +173,7 @@ namespace WindowsFormsApplication1
                     if (capture.QueryDeviceInfo(j, out dinfo) < pxcmStatus.PXCM_STATUS_NO_ERROR) break;
                     if (dinfo.model == PXCMCapture.DeviceModel.DEVICE_MODEL_GENERIC) continue;
 
-                    ToolStripMenuItem sm1 = new ToolStripMenuItem(i+":"+ j +":"+dinfo.name, null, new EventHandler(Device_Item_Click));
+                    ToolStripMenuItem sm1 = new ToolStripMenuItem(i + ":" + j + ":" + dinfo.name, null, new EventHandler(Device_Item_Click));
                     devices[sm1] = dinfo;
                     devices_iuid[sm1] = desc_sub.iuid;
                     DeviceMenu.DropDownItems.Add(sm1);
@@ -235,6 +247,8 @@ namespace WindowsFormsApplication1
                 }
                 capture.Dispose();
             }
+            if (ColorMenu.DropDownItems.Count > 0)
+                (ColorMenu.DropDownItems[0] as ToolStripMenuItem).Checked = true;
         }
 
         private void Color_Item_Click(object s, EventArgs e)
@@ -284,16 +298,18 @@ namespace WindowsFormsApplication1
                             var dprofile = profile[PXCMCapture.StreamType.STREAM_TYPE_DEPTH];
                             var tsm = new ToolStripMenuItem(ProfileToString(dprofile), null, new EventHandler(Depth_Item_Click));
                             DepthMenu.DropDownItems.Add(tsm);
+                            profiles[tsm] = dprofile;
                         }
                     }
                     device.Dispose();
                 }
                 capture.Dispose();
             }
-
+            if (DepthMenu.DropDownItems.Count > 0)
+                (DeviceMenu.DropDownItems[0] as ToolStripMenuItem).Checked = true;
         }
 
-        private void Depth_Item_Click(object s,EventArgs e)
+        private void Depth_Item_Click(object s, EventArgs e)
         {
             foreach (ToolStripMenuItem t in DepthMenu.DropDownItems)
                 t.Checked = (t == s);
@@ -337,9 +353,22 @@ namespace WindowsFormsApplication1
             return line;
         }
 
-        private void RSSDKClose(object s,EventArgs e)
+        private void RSSDKClose(object s, EventArgs e)
         {
+            streamreader.Stop = true;
             session.Dispose();
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            streamreader.Stop = true;
+        }
+
+        private void buttonSnap_Click(object sender, EventArgs e)
+        {
+            var image = streamreader.getSingleImage();
+            renderSnap.UpdatePanel(image);
+        }
+
     }
 }

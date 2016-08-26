@@ -36,6 +36,7 @@ namespace WindowsFormsApplication1
             streamreader.RenderFrame += new EventHandler<EventArgsRenderFrame>(RenderFrameHandler);
             renderWindow1.Paint += new PaintEventHandler(renderWindow_PaintHandler);
             renderWindow1.Resize += new EventHandler(renderWindow_ResizeHandler);
+            streamreader.ScanAlert += AlertDisplayHandler;
 
             render.SetHWND(renderWindow1);
             renderSnap.SetHWND(pictureBoxSnap);
@@ -261,7 +262,7 @@ namespace WindowsFormsApplication1
             foreach (ToolStripMenuItem t2 in DeviceMenu.DropDownItems)
                 if (t2.Checked) PopulateDepthMenus(t2 as ToolStripMenuItem);
         }
-
+    
         private PXCMCapture.Device.StreamProfile GetColorStreamProfile()
         {
             foreach (ToolStripMenuItem t in ColorMenu.DropDownItems)
@@ -369,6 +370,11 @@ namespace WindowsFormsApplication1
         {
             var image = streamreader.getSingleImage();
             renderSnap.UpdatePanel(image);
+        }
+
+        private void AlertDisplayHandler(object s,EventArgsScanAlert e)
+        {
+            labelAlert.Text = e.alert.ToString().Substring(6);
         }
 
     }

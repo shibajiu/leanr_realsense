@@ -45,6 +45,8 @@
             this.pictureBoxSnap = new System.Windows.Forms.PictureBox();
             this.button2 = new System.Windows.Forms.Button();
             this.buttonSnap = new System.Windows.Forms.Button();
+            this.labelAlert = new System.Windows.Forms.Label();
+            this.buttonScan = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.renderWindow1)).BeginInit();
@@ -196,11 +198,31 @@
             this.buttonSnap.UseVisualStyleBackColor = true;
             this.buttonSnap.Click += new System.EventHandler(this.buttonSnap_Click);
             // 
+            // labelAlert
+            // 
+            this.labelAlert.AutoSize = true;
+            this.labelAlert.Location = new System.Drawing.Point(1510, 148);
+            this.labelAlert.Name = "labelAlert";
+            this.labelAlert.Size = new System.Drawing.Size(53, 18);
+            this.labelAlert.TabIndex = 14;
+            this.labelAlert.Text = "await";
+            // 
+            // buttonScan
+            // 
+            this.buttonScan.Location = new System.Drawing.Point(1513, 216);
+            this.buttonScan.Name = "buttonScan";
+            this.buttonScan.Size = new System.Drawing.Size(152, 90);
+            this.buttonScan.TabIndex = 15;
+            this.buttonScan.Text = "Scan";
+            this.buttonScan.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1838, 939);
+            this.Controls.Add(this.buttonScan);
+            this.Controls.Add(this.labelAlert);
             this.Controls.Add(this.buttonSnap);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.pictureBoxSnap);
@@ -247,6 +269,8 @@
         private System.Windows.Forms.PictureBox pictureBoxSnap;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button buttonSnap;
+        private System.Windows.Forms.Label labelAlert;
+        private System.Windows.Forms.Button buttonScan;
     }
 }
 

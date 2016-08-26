@@ -29,17 +29,29 @@ namespace WindowsFormsApplication1
         }
     }
 
+    class EventArgsScanAlert :EventArgs
+    {
+        public PXCM3DScan.AlertEvent alert;
+
+        public EventArgsScanAlert(PXCM3DScan.AlertEvent a)
+        {
+            alert = a;
+        }
+    }
+
     
     class StreamReader
     {
         public event EventHandler<EventArgsUpdateStatus> UpdateStatus;
         public event EventHandler<EventArgsRenderFrame> RenderFrame;
+        public event EventHandler<EventArgsScanAlert> ScanAlert;
         public bool Playback;
         public bool Record;
         public string File;
         public bool Mirror;
         public bool Stop;
         public bool Synced;
+        public bool Scanning;
         public PXCMCapture.DeviceInfo DeviceInfo;
         public PXCMCapture.Device.StreamProfileSet ProfileSet;
         public PXCMCapture.StreamType MainPanel;
@@ -64,6 +76,7 @@ namespace WindowsFormsApplication1
             DeviceInfo = null;
             RenderFrame = null;
             UpdateStatus = null;
+            ScanAlert = null;
             Mirror = Synced = true;
             Playback = Record = Stop = false;
             MainPanel = PIPPanel = PXCMCapture.StreamType.STREAM_TYPE_ANY;
@@ -138,19 +151,7 @@ namespace WindowsFormsApplication1
 
                     config.options = PXCM3DScan.ReconstructionOption.NONE;
                     //...scan option codes
-                    var scan = pmsm.Query3DScan();
-                    if (scan == null) SetStatus("Query3DScan Failed");
-                    else
-                    {
-                        if (scan.SetConfiguration(config) < pxcmStatus.PXCM_STATUS_NO_ERROR)
-                        {
-                            scan.Dispose();
-                        }
-                        else
-                        {
-
-                        }
-                    }
+                    
                     SetStatus("Init Start");
                     if (pmsm.Init() >= pxcmStatus.PXCM_STATUS_NO_ERROR)
                     {
@@ -158,11 +159,38 @@ namespace WindowsFormsApplication1
                         PXCMCapture.Device.MirrorMode mirror = Mirror ? PXCMCapture.Device.MirrorMode.MIRROR_MODE_HORIZONTAL : PXCMCapture.Device.MirrorMode.MIRROR_MODE_DISABLED;
                         pmsm.captureManager.device.SetMirrorMode(mirror);
 
+                        var scan = pmsm.Query3DScan();
+                        if (scan == null) SetStatus("Query3DScan Failed");
+                        else
+                        {
+                            var r = scan.SetConfiguration(config);
+                            if (r < pxcmStatus.PXCM_STATUS_NO_ERROR)
+                            {
+                                scan.Dispose();
+                            }
+                            else
+                            {
+                                scan.Subscribe(new PXCM3DScan.OnAlertDelegate(onAlert));
+                            }
+                        }
+
                         SetStatus("Streaming");
                         while (!Stop)
                         {
                             //synchronized or asynchronous
                             if (pmsm.AcquireFrame(Synced).IsError()) break;
+
+                            if (Scanning)
+                            {
+                                var scanimage = scan.AcquirePreviewImage();
+                                pmsm.ReleaseFrame();
+                                if (scanimage != null)
+                                {
+                                    
+
+                                    scanimage.Dispose();
+                                }
+                            }
 
                             PXCMCapture.Sample sample = pmsm.QuerySample();
                             PXCMImage image = null;
@@ -192,6 +220,7 @@ namespace WindowsFormsApplication1
                         SetStatus("Init Failed");
                         sts = false;
                     }
+                    pmsm.Close();
                     pmsm.Dispose();
                     if (sts) SetStatus("Stoped");
                 }
@@ -204,17 +233,15 @@ namespace WindowsFormsApplication1
         }
          private void onAlert(PXCM3DScan.AlertData data)
         {
-            try
-            {
-                switch (data.label)
-                {
-                    case PXCM3DScan.AlertEvent.ALERT_TOO_CLOSE:
-                        {
-                            break;
-                        }
+            ScanAlert?.Invoke(this, new EventArgsScanAlert(data.label));
+        }
 
-                }
-            }catch { }
+        private void SaveReconstruct(PXCM3DScan scan)
+        {
+            SetStatus("Saving...");
+
+            string filename;
+
         }
     }
 }

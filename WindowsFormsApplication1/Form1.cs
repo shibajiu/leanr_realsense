@@ -41,6 +41,7 @@ namespace WindowsFormsApplication1
             render.SetHWND(renderWindow1);
             renderSnap.SetHWND(pictureBoxSnap);
             streamreader.MainPanel = PXCMCapture.StreamType.STREAM_TYPE_COLOR;
+            buttonSnap.Enabled = false;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -236,8 +237,18 @@ namespace WindowsFormsApplication1
                         {
                             var stt = device.QueryStreamProfileSet(PXCMCapture.StreamType.STREAM_TYPE_COLOR, p, out profile);
                             if (stt.IsError()) break;
-
                             PXCMCapture.Device.StreamProfile prf = profile[ctype];//i had already query this type,so why?
+                            if (dinfo.model == PXCMCapture.DeviceModel.DEVICE_MODEL_R200)
+                            {
+                                if (prf.imageInfo.format != PXCMImage.PixelFormat.PIXEL_FORMAT_RGB32)
+                                    continue;
+                                if (prf.imageInfo.width > 720)
+                                    continue;
+                                if (prf.options == PXCMCapture.Device.StreamOption.STREAM_OPTION_UNRECTIFIED)
+                                    continue;
+                                if (prf.frameRate.max > 30)
+                                    continue;
+                            }
                             var tsm = new ToolStripMenuItem(ProfileToString(prf), null, new EventHandler(Color_Item_Click));
                             ColorMenu.DropDownItems.Add(tsm);
                             profiles[tsm] = prf;
@@ -298,6 +309,11 @@ namespace WindowsFormsApplication1
                             if (device.QueryStreamProfileSet(PXCMCapture.StreamType.STREAM_TYPE_DEPTH, p, out profile) < pxcmStatus.PXCM_STATUS_NO_ERROR)
                                 break;
                             var dprofile = profile[PXCMCapture.StreamType.STREAM_TYPE_DEPTH];
+                            if (dinfo2.model == PXCMCapture.DeviceModel.DEVICE_MODEL_R200)
+                            {
+                                if (dprofile.frameRate.max > 30)
+                                    continue;
+                            }
                             var tsm = new ToolStripMenuItem(ProfileToString(dprofile), null, new EventHandler(Depth_Item_Click));
                             DepthMenu.DropDownItems.Add(tsm);
                             profiles[tsm] = dprofile;
@@ -307,8 +323,9 @@ namespace WindowsFormsApplication1
                 }
                 capture.Dispose();
             }
+            
             if (DepthMenu.DropDownItems.Count > 0)
-                (DeviceMenu.DropDownItems[0] as ToolStripMenuItem).Checked = true;
+                (DepthMenu.DropDownItems[0] as ToolStripMenuItem).Checked = true;
         }
 
         private void Depth_Item_Click(object s, EventArgs e)

@@ -59,7 +59,7 @@ namespace WindowsFormsApplication1
 
         private bool isGetImage = false;
         private PXCMImage _Image;
-        private string ScanType="Object";
+        private string ScanType = "Object";
 
         public enum Config3D
         {
@@ -113,6 +113,11 @@ namespace WindowsFormsApplication1
                     SetStatus("Create PXCMSenseManager Failed");
                     return;
                 }
+                if (pmsm.captureManager == null)
+                {
+                    SetStatus("Capture manager does not exist");
+                    return;
+                }
                 if ((Playback || Record) && File != null)
                     pmsm.captureManager.SetFileName(File, Record);
                 if (!Playback && DeviceInfo != null)
@@ -153,7 +158,8 @@ namespace WindowsFormsApplication1
                     //...scan option codes
                     
                     SetStatus("Init Start");
-                    if (pmsm.Init() >= pxcmStatus.PXCM_STATUS_NO_ERROR)
+                    result = pmsm.Init();
+                    if (result >= pxcmStatus.PXCM_STATUS_NO_ERROR)
                     {
                         pmsm.captureManager.device.ResetProperties(PXCMCapture.StreamType.STREAM_TYPE_ANY);
                         PXCMCapture.Device.MirrorMode mirror = Mirror ? PXCMCapture.Device.MirrorMode.MIRROR_MODE_HORIZONTAL : PXCMCapture.Device.MirrorMode.MIRROR_MODE_DISABLED;
@@ -240,8 +246,20 @@ namespace WindowsFormsApplication1
         {
             SetStatus("Saving...");
 
-            string filename;
+            string filename="e:/myscan.obj";
 
+            SetStatus("Saving" + filename);
+            string mesh_format = filename.Substring(filename.Length - 3);
+            pxcmStatus result = scan.Reconstruct(mesh_format.ToLower() == "obj" ? PXCM3DScan.FileFormat.OBJ : mesh_format.ToLower() == "ply" ? PXCM3DScan.FileFormat.PLY : PXCM3DScan.FileFormat.STL,filename);
+            if (result < pxcmStatus.PXCM_STATUS_NO_ERROR)
+            {
+                if (result == pxcmStatus.PXCM_STATUS_FILE_WRITE_FAILED)
+                    SetStatus("file write failed");
+                else
+                    SetStatus("Reconstruct::Failed::" + result);
+            }
+            else
+                SetStatus("file saved");
         }
     }
 }
